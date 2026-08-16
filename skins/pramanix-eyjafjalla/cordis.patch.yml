@@ -1,0 +1,4 @@
+# Install-time patch: registers the public browser client entry in the DSH web profile.
+- insert:
+    - id: ui-skin-arknights
+      name: dsh-arknights

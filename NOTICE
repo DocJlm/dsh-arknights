@@ -1,0 +1,18 @@
+dsh-arknights is an unofficial, non-commercial fan-made skin collection for
+DeepSeek Harness Web. It is not affiliated with, endorsed by, or sponsored by
+Hypergryph, Yostar, DeepSeek, or their affiliates.
+
+Arknights character names, visual identities, trademarks, and related
+intellectual property remain the property of their respective rights holders.
+No license in this repository grants rights to those third-party properties.
+
+Original source code authored for this repository is licensed under the MIT
+License. Original background, character composition, and preview assets are
+offered under CC BY-NC-SA 4.0 only to the extent their contributors have the
+right to license them. Built bundles that embed artwork remain subject to both
+the source-code and artwork terms.
+
+The plugin architecture follows the public DeepSeek Harness Cordis client
+bundle contract. The project structure was informed by the Apache-2.0 licensed
+dsh-web-ui project and public compatibility observations from dsh-deep-whale.
+No artwork from either reference repository is bundled here.

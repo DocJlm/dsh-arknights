@@ -1,0 +1,30 @@
+{
+  "id": "arknights",
+  "name": "初雪和小羊",
+  "nameEn": "Pramanix & Eyjafjalla",
+  "author": "DocJlm",
+  "tagline": "星海庭园、高清双角色与原生侧栏",
+  "description": "面向 DeepSeek Harness Web 的非官方、非商业同人皮肤。亮暗主题共享双角色图层，以星海玻璃庭园、珍珠白、宝石蓝和香槟金重塑首页与对话界面，并保留 DSH 原生侧栏。",
+  "tags": [
+    "anime",
+    "arknights",
+    "pramanix",
+    "eyjafjalla",
+    "astral",
+    "garden",
+    "jewel"
+  ],
+  "accent": "#c9a66b",
+  "bodyAttr": "data-dsh-arknights",
+  "package": "dsh-arknights",
+  "wiring": {
+    "id": "ui-skin-arknights",
+    "bundleWired": false
+  },
+  "preview": {
+    "cover": "preview/cover.webp",
+    "light": "preview/cover.webp",
+    "dark": "preview/cover.webp"
+  },
+  "order": 5
+}

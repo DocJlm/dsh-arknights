@@ -1,0 +1,15 @@
+node_modules/
+coverage/
+.cache/
+*.log
+*.tmp
+**/lib/*.map
+.DS_Store
+Thumbs.db
+
+# Local review and process artifacts
+work/
+process/
+**/preview/*-review-*
+**/preview/approval-*
+**/preview/PROMPTS.md

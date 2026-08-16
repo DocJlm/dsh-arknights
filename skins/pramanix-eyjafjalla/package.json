@@ -1,0 +1,61 @@
+{
+  "name": "dsh-arknights",
+  "version": "0.1.0",
+  "description": "Unofficial non-commercial Pramanix and Eyjafjalla astral garden skin for DeepSeek Harness Web",
+  "private": true,
+  "author": "DocJlm",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "^22.19 || >=24"
+  },
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./skin.json": "./skin.json",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "clean": "node scripts/clean-lib.mjs",
+    "embed-assets": "node scripts/embed-assets.mjs",
+    "build": "pnpm clean && pnpm embed-assets && tsdown && pnpm verify",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "verify": "node scripts/verify-package.mjs"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@types/node": "^24.0.0",
+    "jsdom": "29.1.1",
+    "tsdown": "0.22.14",
+    "typescript": "^5.9.2",
+    "vitest": "4.1.10"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml",
+    "skin.json",
+    "assets",
+    "preview/cover.webp",
+    "src",
+    "tests",
+    "LICENSE",
+    "ASSETS-LICENSE.md",
+    "NOTICE",
+    "README.md"
+  ]
+}
