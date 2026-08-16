@@ -32,6 +32,7 @@ describe('dsh-arknights skin lifecycle', () => {
   it('declares the scoped body state and required owned layers', async () => {
     await mount()
     expect(document.body.hasAttribute('data-dsh-arknights')).toBe(true)
+    expect(document.body.hasAttribute('data-arknights-home')).toBe(false)
     expect(document.querySelectorAll("[data-arknights-owner='dsh-arknights']").length).toBeGreaterThanOrEqual(3)
     expect(document.querySelectorAll('[data-arknights-character]')).toHaveLength(2)
   })
@@ -39,6 +40,7 @@ describe('dsh-arknights skin lifecycle', () => {
   it('replaces the hero welcome text and restores it on dispose', async () => {
     document.body.innerHTML = '<main data-phase="hero"><span class="fixture_headlineText">Into the Unknown</span></main>'
     const fiber = await mount()
+    expect(document.body.hasAttribute('data-arknights-home')).toBe(true)
     expect(document.querySelector('.fixture_headlineText')?.textContent).toBe('欢迎回家，博士！')
     await fiber.dispose()
     fibers = fibers.filter(item => item !== fiber)
@@ -50,14 +52,64 @@ describe('dsh-arknights skin lifecycle', () => {
     document.body.insertAdjacentHTML('beforeend', '<main data-phase="hero"><span class="fixture_headlineText">Into the Unknown</span></main>')
     await flushMutations()
     expect(document.body.dataset.arknightsPhase).toBe('hero')
+    expect(document.body.hasAttribute('data-arknights-home')).toBe(true)
     const phase = document.querySelector<HTMLElement>('[data-phase]')!
     phase.dataset.phase = 'active'
     await flushMutations()
     expect(document.body.dataset.arknightsPhase).toBe('active')
+    expect(document.body.hasAttribute('data-arknights-home')).toBe(false)
     expect(phase.querySelector('.fixture_headlineText')?.textContent).toBe('Into the Unknown')
   })
 
+  it('keeps a directly loaded conversation on the native DSH presentation', async () => {
+    document.head.innerHTML = '<meta name="theme-color" content="#ffffff">'
+    document.title = 'Active session'
+    document.body.innerHTML = '<main data-phase="active"><div data-composer-card>Composer</div></main>'
+    await mount()
+    expect(document.body.dataset.arknightsPhase).toBe('active')
+    expect(document.body.hasAttribute('data-arknights-home')).toBe(false)
+    expect(document.title).toBe('Active session')
+    expect(document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content).toBe('#ffffff')
+    expect(document.body.style.getPropertyValue('--ark-hero-background')).toBe('')
+    document.body.setAttribute('data-ds-dark-theme', '')
+    await flushMutations()
+    expect(document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content).toBe('#ffffff')
+    expect(document.body.style.getPropertyValue('--ark-hero-background')).toBe('')
+  })
+
+  it('restores native chrome in chat and reapplies the skin when returning home', async () => {
+    document.head.innerHTML = '<meta name="theme-color" content="#ffffff">'
+    document.title = 'DeepSeek Harness'
+    document.body.innerHTML = `
+      <main data-phase="hero"><span class="fixture_headlineText">Into the Unknown</span></main>
+      <aside data-pane="sidebar"><div></div></aside>`
+    await mount()
+    const phase = document.querySelector<HTMLElement>('[data-phase]')!
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!
+    expect(document.title).toContain('dsh-arknights')
+    expect(meta.content).toBe('#78c8e8')
+    expect(document.querySelector('[data-arknights-sidebar-root]')).not.toBeNull()
+
+    phase.dataset.phase = 'active'
+    await flushMutations()
+    expect(document.body.hasAttribute('data-arknights-home')).toBe(false)
+    expect(document.title).toBe('DeepSeek Harness')
+    expect(meta.content).toBe('#ffffff')
+    expect(document.body.style.getPropertyValue('--ark-hero-background')).toBe('')
+    expect(document.querySelector('[data-arknights-sidebar-root]')).toBeNull()
+    expect(phase.querySelector('.fixture_headlineText')?.textContent).toBe('Into the Unknown')
+
+    phase.dataset.phase = 'hero'
+    await flushMutations()
+    expect(document.body.hasAttribute('data-arknights-home')).toBe(true)
+    expect(document.title).toContain('dsh-arknights')
+    expect(meta.content).toBe('#78c8e8')
+    expect(document.body.style.getPropertyValue('--ark-hero-background')).toContain('data:image')
+    expect(phase.querySelector('.fixture_headlineText')?.textContent).toBe('欢迎回家，博士！')
+  })
+
   it('switches the embedded background with the DSH dark-theme attribute', async () => {
+    document.body.innerHTML = '<main data-phase="hero"></main>'
     await mount()
     const light = document.body.style.getPropertyValue('--ark-hero-background')
     document.body.setAttribute('data-ds-dark-theme', '')
@@ -68,6 +120,7 @@ describe('dsh-arknights skin lifecycle', () => {
   })
 
   it('marks a remounted native sidebar without adding custom decorations', async () => {
+    document.body.innerHTML = '<main data-phase="hero"></main>'
     await mount()
     document.body.insertAdjacentHTML('beforeend', '<aside data-pane="sidebar"><div></div></aside>')
     await flushMutations()
@@ -82,6 +135,7 @@ describe('dsh-arknights skin lifecycle', () => {
 
   it('preserves native session markup and removes only sidebar hooks on dispose', async () => {
     document.body.innerHTML = `
+      <main data-phase="hero"></main>
       <aside data-pane="sidebar"><div>
         <div role="tree">
           <div><button role="treeitem" aria-expanded="true">Workspace</button></div>
@@ -122,6 +176,7 @@ describe('dsh-arknights skin lifecycle', () => {
 
   it('restores title, theme color, inline variables, nodes and activation state', async () => {
     document.title = 'DeepSeek Harness'
+    document.body.innerHTML = '<main data-phase="hero"></main>'
     document.body.style.setProperty('--ark-sidebar-width', '17px')
     const meta = document.createElement('meta')
     meta.name = 'theme-color'
@@ -149,7 +204,7 @@ describe('dsh-arknights skin lifecycle', () => {
       disconnect = disconnect
     }
     vi.stubGlobal('ResizeObserver', ResizeObserverFixture)
-    document.body.innerHTML = '<aside data-pane="sidebar"><div></div></aside>'
+    document.body.innerHTML = '<main data-phase="hero"></main><aside data-pane="sidebar"><div></div></aside>'
     const fiber = await mount()
     expect(observe).toHaveBeenCalledOnce()
     await fiber.dispose()
@@ -161,6 +216,9 @@ describe('dsh-arknights skin lifecycle', () => {
     expect(THEME_CSS).toContain('@media (max-width: 1024px)')
     expect(THEME_CSS).toContain('@media (prefers-reduced-motion: reduce)')
     expect(THEME_CSS).toContain('pointer-events: none')
+    expect(THEME_CSS).toContain('[data-arknights-home]')
+    expect(THEME_CSS).not.toContain("[data-phase='active']")
+    expect(THEME_CSS).not.toContain("data-arknights-phase='active'")
     expect(THEME_CSS).not.toContain('[data-arknights-sidebar-root]')
     expect(THEME_CSS).not.toContain('[data-arknights-sidebar-footer]')
   })

@@ -51,7 +51,7 @@ export function apply(ctx: Context): void {
   }
 
   const body = document.body
-  const previousTitle = document.title
+  let officialTitle = document.title
   const previousProperties = new Map<string, string>()
   for (const property of BODY_PROPERTIES) previousProperties.set(property, body.style.getPropertyValue(property))
 
@@ -62,8 +62,17 @@ export function apply(ctx: Context): void {
   let resizeObserver: ResizeObserver | undefined
   let observedSidebar: HTMLElement | undefined
   let themeMeta: HTMLMetaElement | null = null
-  let previousThemeColor: string | undefined
+  let officialThemeColor: string | undefined
+  let themeColorOverridden = false
+  let homeActive = false
   let disposed = false
+
+  const restoreBodyProperties = (): void => {
+    for (const [property, value] of previousProperties) {
+      if (value === '') body.style.removeProperty(property)
+      else body.style.setProperty(property, value)
+    }
+  }
 
   const clearProjectedAttributes = (): void => {
     for (const element of decoratedElements) {
@@ -72,24 +81,48 @@ export function apply(ctx: Context): void {
     decoratedElements.clear()
   }
 
+  const stopSidebarProjection = (): void => {
+    if (resizeObserver !== undefined && observedSidebar !== undefined) resizeObserver.unobserve(observedSidebar)
+    observedSidebar = undefined
+    clearProjectedAttributes()
+    delete body.dataset.arknightsSidebarSize
+  }
+
+  const restoreWelcome = (): void => {
+    welcomeOriginals.forEach((text, element) => {
+      if (element.isConnected && element.textContent === WELCOME_TEXT) element.textContent = text
+    })
+  }
+
+  const restoreOfficialChrome = (): void => {
+    if (
+      themeColorOverridden
+      && themeMeta?.isConnected
+      && (themeMeta.content === '#78c8e8' || themeMeta.content === '#071936')
+    ) {
+      themeMeta.content = officialThemeColor ?? ''
+    }
+    themeMeta = null
+    officialThemeColor = undefined
+    themeColorOverridden = false
+    if (document.title === SKIN_TITLE) document.title = officialTitle
+  }
+
   const cleanup = (): void => {
     if (disposed) return
     disposed = true
     observer?.disconnect()
     resizeObserver?.disconnect()
-    welcomeOriginals.forEach((text, element) => {
-      if (element.isConnected && element.textContent === WELCOME_TEXT) element.textContent = text
-    })
-    clearProjectedAttributes()
+    homeActive = false
+    delete body.dataset.arknightsHome
+    restoreWelcome()
+    stopSidebarProjection()
+    restoreOfficialChrome()
     ownedNodes.forEach(node => node.remove())
     delete body.dataset.dshArknights
     delete body.dataset.arknightsPhase
     delete body.dataset.arknightsSidebarSize
-    for (const [property, value] of previousProperties) body.style.setProperty(property, value)
-    if (themeMeta?.isConnected && (themeMeta.content === '#78c8e8' || themeMeta.content === '#071936')) {
-      themeMeta.content = previousThemeColor ?? ''
-    }
-    if (document.title === SKIN_TITLE) document.title = previousTitle
+    restoreBodyProperties()
     if (window.__dshArknightsActivation?.cleanup === cleanup) delete window.__dshArknightsActivation
   }
 
@@ -111,15 +144,17 @@ export function apply(ctx: Context): void {
   body.prepend(stage)
 
   const syncTheme = (): void => {
+    if (!homeActive) return
     const dark = body.hasAttribute('data-ds-dark-theme')
     const background = dark ? ARKNIGHTS_BACKGROUND_DARK : ARKNIGHTS_BACKGROUND_LIGHT
     body.style.setProperty('--ark-hero-background', `url(${background})`)
     body.style.setProperty('--ark-empty-background', `url(${background})`)
     const meta = document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
     if (meta !== null) {
-      if (themeMeta !== meta) {
+      if (themeMeta !== meta || !themeColorOverridden) {
         themeMeta = meta
-        previousThemeColor = meta.content
+        officialThemeColor = meta.content
+        themeColorOverridden = true
       }
       meta.content = dark ? '#071936' : '#78c8e8'
     }
@@ -136,11 +171,6 @@ export function apply(ctx: Context): void {
     }
   }
 
-  const syncPhase = (): void => {
-    const phase = document.querySelector<HTMLElement>("[data-phase='hero'], [data-phase='active']")?.dataset.phase
-    body.dataset.arknightsPhase = phase === 'hero' || phase === 'active' ? phase : 'other'
-  }
-
   const setSidebarWidth = (width: number): void => {
     if (width <= 0) return
     body.style.setProperty('--ark-sidebar-width', `${Math.round(width * 100) / 100}px`)
@@ -148,6 +178,8 @@ export function apply(ctx: Context): void {
   }
 
   const decorateSidebar = (): void => {
+    if (!homeActive) return
+    clearProjectedAttributes()
     const sidebar = document.querySelector<HTMLElement>(SIDEBAR_SELECTOR)
     const root = sidebar?.querySelector<HTMLElement>(':scope > div')
     if (sidebar === null || sidebar === undefined || root === null || root === undefined) {
@@ -178,17 +210,46 @@ export function apply(ctx: Context): void {
 
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(entries => {
+      if (!homeActive) return
       const entry = entries.at(-1)
       if (entry !== undefined) setSidebarWidth(entry.contentRect.width)
     })
   }
 
+  const activateHome = (): void => {
+    if (!homeActive) {
+      homeActive = true
+      body.dataset.arknightsHome = ''
+      officialTitle = document.title
+    }
+    document.title = SKIN_TITLE
+    syncTheme()
+    syncWelcome()
+    decorateSidebar()
+  }
+
+  const deactivateHome = (): void => {
+    homeActive = false
+    delete body.dataset.arknightsHome
+    restoreWelcome()
+    stopSidebarProjection()
+    restoreBodyProperties()
+    restoreOfficialChrome()
+  }
+
+  const syncPhase = (): void => {
+    const phase = document.querySelector("[data-phase='active']") !== null
+      ? 'active'
+      : document.querySelector("[data-phase='hero']") !== null
+        ? 'hero'
+        : 'other'
+    body.dataset.arknightsPhase = phase
+    if (phase === 'hero') activateHome()
+    else deactivateHome()
+  }
+
   body.dataset.dshArknights = ''
-  document.title = SKIN_TITLE
-  syncTheme()
-  syncWelcome()
   syncPhase()
-  decorateSidebar()
 
   observer = new MutationObserver(records => {
     let shouldSyncTheme = false
@@ -202,11 +263,7 @@ export function apply(ctx: Context): void {
       if (record.type === 'childList') shouldSyncStructure = true
     }
     if (shouldSyncTheme) syncTheme()
-    if (shouldSyncPhase || shouldSyncStructure) {
-      syncPhase()
-      syncWelcome()
-    }
-    if (shouldSyncStructure) decorateSidebar()
+    if (shouldSyncPhase || shouldSyncStructure) syncPhase()
   })
   observer.observe(body, {
     attributes: true,
