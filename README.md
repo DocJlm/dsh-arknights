@@ -20,6 +20,15 @@
 
 ## 安装
 
+推荐直接从 npm 安装：
+
+```powershell
+npx @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add dsh-arknights
+npx @deepseek-ai/dsh@0.1.0-rc.6 web
+```
+
+也可以从源码目录安装：
+
 ```powershell
 git clone https://github.com/DocJlm/dsh-arknights
 npx @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add "<仓库路径>\dsh-arknights\skins\pramanix-eyjafjalla"

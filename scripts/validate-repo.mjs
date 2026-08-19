@@ -42,8 +42,21 @@ for (const entry of entries) {
 
   const pkg = JSON.parse(await readFile(resolve(skinRoot, 'package.json'), 'utf8'))
   const skin = JSON.parse(await readFile(resolve(skinRoot, 'skin.json'), 'utf8'))
-  if (pkg.private !== true) throw new Error(`${entry.name}: package must remain private`)
-  if (pkg.license !== 'MIT') throw new Error(`${entry.name}: source license must be MIT`)
+  const publishable = pkg.private !== true
+  if (!['MIT', '(MIT AND CC-BY-NC-SA-4.0)'].includes(pkg.license)) {
+    throw new Error(`${entry.name}: package license must cover the MIT source code`)
+  }
+  if (publishable) {
+    if (pkg.publishConfig?.access !== 'public') {
+      throw new Error(`${entry.name}: public packages must declare publishConfig.access as public`)
+    }
+    if (pkg.repository?.url !== 'git+https://github.com/DocJlm/dsh-arknights.git') {
+      throw new Error(`${entry.name}: public package repository must point to DocJlm/dsh-arknights`)
+    }
+    if (pkg.repository?.directory !== `skins/${entry.name}`) {
+      throw new Error(`${entry.name}: public package repository.directory must match its skin directory`)
+    }
+  }
   if (skin.author === undefined || skin.author === '') throw new Error(`${entry.name}: skin author is required`)
 
   for (const [set, value, label] of [

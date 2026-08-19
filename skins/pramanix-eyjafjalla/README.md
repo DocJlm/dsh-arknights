@@ -7,15 +7,22 @@
 ## 功能
 
 - 根据 DSH 明暗主题切换昼夜庭园背景；
-- 首页展示独立透明双角色层，聊天页自动缩小至安全边缘；
-- 响应侧栏宽度、首页与聊天状态以及不同视口尺寸；
+- 首页展示独立透明双角色层，进入聊天会话后完整恢复 DSH 官方界面；
+- 返回 New Session 初始首页时自动恢复皮肤，并响应侧栏宽度与不同视口尺寸；
 - 将首页欢迎语显示为“欢迎回家，博士！”；
 - 支持 `prefers-reduced-motion`，并在卸载时恢复全部 DOM、样式和观察器状态；
 - 素材内嵌在构建产物中，运行时不加载远程图片。
 
 ## 安装
 
-从仓库根目录执行：
+推荐直接从 npm 安装：
+
+```powershell
+npx @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add dsh-arknights
+npx @deepseek-ai/dsh@0.1.0-rc.6 web
+```
+
+也可以从仓库根目录安装当前源码：
 
 ```powershell
 npx @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add "<仓库路径>\dsh-arknights\skins\pramanix-eyjafjalla"
