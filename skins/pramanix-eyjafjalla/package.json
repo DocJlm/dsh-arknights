@@ -2,9 +2,28 @@
   "name": "dsh-arknights",
   "version": "0.1.0",
   "description": "Unofficial non-commercial Pramanix and Eyjafjalla astral garden skin for DeepSeek Harness Web",
-  "private": true,
   "author": "DocJlm",
-  "license": "MIT",
+  "license": "(MIT AND CC-BY-NC-SA-4.0)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DocJlm/dsh-arknights.git",
+    "directory": "skins/pramanix-eyjafjalla"
+  },
+  "homepage": "https://github.com/DocJlm/dsh-arknights/tree/main/skins/pramanix-eyjafjalla#readme",
+  "bugs": {
+    "url": "https://github.com/DocJlm/dsh-arknights/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "arknights",
+    "skin",
+    "theme"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "engines": {
     "node": "^22.19 || >=24"
@@ -49,10 +68,7 @@
     "lib/client.js",
     "cordis.patch.yml",
     "skin.json",
-    "assets",
     "preview/cover.webp",
-    "src",
-    "tests",
     "LICENSE",
     "ASSETS-LICENSE.md",
     "NOTICE",

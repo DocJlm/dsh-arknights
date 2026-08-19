@@ -15,7 +15,14 @@
 
 ## 安装
 
-从仓库根目录执行：
+推荐直接从 npm 安装：
+
+```powershell
+npx @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add dsh-arknights
+npx @deepseek-ai/dsh@0.1.0-rc.6 web
+```
+
+也可以从仓库根目录安装当前源码：
 
 ```powershell
 npx @deepseek-ai/dsh@0.1.0-rc.6 plugin --profile web add "<仓库路径>\dsh-arknights\skins\pramanix-eyjafjalla"
